@@ -1,17 +1,21 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, Observable, of, Subscription } from 'rxjs';
+import { catchError, interval, Observable, of, Subject, Subscription, take, takeUntil, tap } from 'rxjs';
 import { Olympic } from 'src/app/core/models/Olympic';
 import { PieChart } from 'src/app/core/models/PieChart';
 import { OlympicService } from 'src/app/core/services/olympic.service';
+import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 @Component({
   selector: 'app-home',
+  standalone: true,
+  imports: [NgxChartsModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
 })
 export class HomeComponent implements OnInit {
-  private subscription: Subscription = new Subscription();
+
+  private destroy$!: Subject<boolean>;
 
   chartData: PieChart[] = [];
   joTotal: number = 0
@@ -23,26 +27,23 @@ export class HomeComponent implements OnInit {
 
   constructor(private olympicService: OlympicService, private router: Router) {}
 
-
   ngOnInit(): void {
-    const sub = this.olympicService.getOlympics()
-    // .pipe(
-    //   catchError((error) => {
-    //     console.log("rrrf");
+    this.destroy$ = new Subject<boolean>()
 
-    //     console.error('Erreur de chargement des données :', error);
-    //     this.errorMessage = 'Une erreur est survenue. Veuillez réessayer ultérieurement.';
-    //     return of(null);
-    //   })
-    // )
-    .subscribe((data: Olympic[] | null) => {
-      if (data && data.length) {
-        this.chartData = this.transformDataForChart(data);
-        this.countriesTotal = data.length;
-      }
-    });
+    this.olympicService.getOlympics().pipe(
+      takeUntil(this.destroy$),
+      tap((data: Olympic[]) => {
+        if (data?.length) {
 
-    this.subscription.add(sub);
+          this.chartData = this.transformDataForChart(data);
+          this.countriesTotal = data.length;
+        }
+      }),
+      catchError((error) => {
+        this.errorMessage = 'Une erreur est survenue. Veuillez réessayer ultérieurement.';
+        return of(null);
+      })
+    ).subscribe()
   }
 
   // on click chart element
@@ -63,6 +64,6 @@ export class HomeComponent implements OnInit {
   }
 
   ngOnDestroy(): void {
-    this.subscription.unsubscribe()
+    this.destroy$.next(true);
   }
 }
