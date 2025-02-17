@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
 import { NotFoundComponent } from './pages/not-found/not-found.component';
+import { CountryDetailsComponent } from './country-details/country-details.component';
 
 const routes: Routes = [
   {
@@ -9,7 +10,11 @@ const routes: Routes = [
     component: HomeComponent,
   },
   {
-    path: '**', // wildcard
+    path: 'country-details/:id',
+    component: CountryDetailsComponent,
+  },
+  {
+    path: '**',
     component: NotFoundComponent,
   },
 ];
