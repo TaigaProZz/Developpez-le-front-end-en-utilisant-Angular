@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { OlympicService } from '../core/services/olympic.service';
+import { OlympicService } from '../../core/services/olympic.service';
 import { catchError, of, Subject, takeUntil, tap } from 'rxjs';
-import { Olympic } from '../core/models/Olympic';
+import { Olympic } from '../../core/models/Olympic';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
-import { Participation } from '../core/models/Participation';
-import { LineChart } from '../core/models/LineChart';
+import { Participation } from '../../core/models/Participation';
+import { LineChart } from '../../core/models/LineChart';
 import { Location } from '@angular/common';
 
 @Component({
@@ -61,8 +61,12 @@ export class CountryDetailsComponent implements OnInit {
             this.countryDetails = countryFind;
             this.countryChart = this.transformDataForChart(countryFind);
             this.countryParticipation = this.countryDetails.participations;
-            this.isLoading = false;
+          } else {
+            this.errorMessage = 'No data found'
           }
+          console.log(this.errorMessage);
+
+          this.isLoading = false;
         }
       })
     ).subscribe()
