@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, interval, Observable, of, Subject, Subscription, take, takeUntil, tap } from 'rxjs';
+import { catchError, filter, of, Subject, takeUntil, tap } from 'rxjs';
 import { Olympic } from 'src/app/core/models/Olympic';
 import { PieChart } from 'src/app/core/models/PieChart';
 import { OlympicService } from 'src/app/core/services/olympic.service';
@@ -18,9 +18,10 @@ export class HomeComponent implements OnInit {
   private destroy$!: Subject<boolean>;
 
   chartData: PieChart[] = [];
-  joTotal: number = 0
-  countriesTotal: number = 0
-  errorMessage: string | null = null
+  joTotal: number = 0;
+  countriesTotal: number = 0;
+  errorMessage: string = 'Erreur lors du chargement des données.';
+  isLoading: boolean = false;
 
   // chart options
   showLabels: boolean = true;
@@ -28,22 +29,39 @@ export class HomeComponent implements OnInit {
   constructor(private olympicService: OlympicService, private router: Router) {}
 
   ngOnInit(): void {
+    this.isLoading = true
     this.destroy$ = new Subject<boolean>()
 
+    // get list of country datas
     this.olympicService.getOlympics().pipe(
       takeUntil(this.destroy$),
-      tap((data: Olympic[]) => {
-        if (data?.length) {
-
+      catchError(error => {
+        this.errorMessage = `Erreur lors du chargement des données. ${error?.message}`
+        this.isLoading = false
+        return of(null);
+      }),
+      filter(data => data !== null),
+      tap((data: Olympic[] | null) => {
+        if (data) {
+          // mock data to display it in chart
           this.chartData = this.transformDataForChart(data);
           this.countriesTotal = data.length;
+          this.joTotal = this.getTotalJoYears(data);
         }
       }),
-      catchError((error) => {
-        this.errorMessage = 'Une erreur est survenue. Veuillez réessayer ultérieurement.';
-        return of(null);
-      })
     ).subscribe()
+    this.isLoading = false
+  }
+
+  // count jo's event
+  getTotalJoYears(data: Olympic[]): number {
+    const yearsSet = new Set<number>();
+    data.forEach(country => {
+      country.participations.forEach(participation => {
+        yearsSet.add(participation.year);
+      });
+    });
+    return yearsSet.size;
   }
 
   // on click chart element

@@ -1,16 +1,16 @@
-<section class="section">
+<section>
   <h2>Medals per country</h2>
 
-  <ng-container>
-    <div class="legend-container">
-      <div class="legend-element">
-        <h2>Number of JOs</h2>
-        <span>{{ joTotal }}</span>
-      </div>
-      <div class="legend-element">
-        <h2>Number of countries</h2>
-        <span>{{ countriesTotal }}</span>
-      </div>
+  <p *ngIf="isLoading; else show">Chargement des données...</p>
+
+  <ng-template #show class="legend-container">
+    <div class="legend-element">
+      <h2>Number of JOs</h2>
+      <span>{{ joTotal }}</span>
+    </div>
+    <div class="legend-element">
+      <h2>Number of countries</h2>
+      <span>{{ countriesTotal }}</span>
     </div>
 
     <ngx-charts-pie-chart
@@ -20,5 +20,5 @@
       (select)="onSelect($event)"
       >
     </ngx-charts-pie-chart>
-  </ng-container>
+  </ng-template>
 </section>
