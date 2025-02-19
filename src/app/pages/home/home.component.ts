@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
-import { catchError, filter, of, Subject, takeUntil, tap } from 'rxjs';
+import { catchError, map, of, Subject, takeUntil, tap } from 'rxjs';
 import { Olympic } from 'src/app/core/models/Olympic';
 import { PieChart } from 'src/app/core/models/PieChart';
 import { OlympicService } from 'src/app/core/services/olympic.service';
@@ -20,7 +20,7 @@ export class HomeComponent implements OnInit {
   chartData: PieChart[] = [];
   joTotal: number = 0;
   countriesTotal: number = 0;
-  errorMessage: string = 'Erreur lors du chargement des données.';
+  errorMessage: string = '';
   isLoading: boolean = false;
 
   // chart options
@@ -31,16 +31,13 @@ export class HomeComponent implements OnInit {
   ngOnInit(): void {
     this.isLoading = true
     this.destroy$ = new Subject<boolean>()
-
     // get list of country datas
     this.olympicService.getOlympics().pipe(
       takeUntil(this.destroy$),
       catchError(error => {
         this.errorMessage = `Erreur lors du chargement des données. ${error?.message}`
-        this.isLoading = false
         return of(null);
       }),
-      filter(data => data !== null),
       tap((data: Olympic[] | null) => {
         if (data) {
           // mock data to display it in chart

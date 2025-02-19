@@ -1,7 +1,8 @@
 <section>
   <h2>Medals per country</h2>
 
-  <p *ngIf="isLoading; else show">Chargement des données...</p>
+  <p *ngIf="isLoading">Chargement des données...</p>
+  <p *ngIf="!isLoading && errorMessage.length; else show">{{errorMessage}}</p>
 
   <ng-template #show class="legend-container">
     <div class="legend-element">
